@@ -145,7 +145,7 @@ function createTray() {
 }
 
 function rebuildTrayMenu() {
-  const menu = Menu.buildFromTemplate([
+  const template = [
     { label: 'Drink now 💧', click: () => triggerReminder() },
     {
       label: 'Pause reminders',
@@ -163,6 +163,28 @@ function rebuildTrayMenu() {
         }
       },
     },
+  ];
+
+  // In the installed build, offer a native "start with Windows" toggle.
+  // (In dev, use `npm run autostart:enable` instead.)
+  if (app.isPackaged) {
+    let openAtLogin = false;
+    try {
+      openAtLogin = app.getLoginItemSettings().openAtLogin;
+    } catch (e) {
+      /* not supported on this platform */
+    }
+    template.push({
+      label: 'Start at login',
+      type: 'checkbox',
+      checked: openAtLogin,
+      click: (item) => {
+        app.setLoginItemSettings({ openAtLogin: item.checked });
+      },
+    });
+  }
+
+  template.push(
     { type: 'separator' },
     {
       label: 'Quit Hydrate Buddy',
@@ -170,9 +192,10 @@ function rebuildTrayMenu() {
         app.isQuiting = true;
         app.quit();
       },
-    },
-  ]);
-  tray.setContextMenu(menu);
+    }
+  );
+
+  tray.setContextMenu(Menu.buildFromTemplate(template));
 }
 
 // ---- IPC from the renderer ----------------------------------------------
