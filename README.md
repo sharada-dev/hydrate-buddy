@@ -16,7 +16,23 @@ Linux — only the one-command auto-start setup is Windows-only there (see below
 
 ---
 
-## 🚀 Get started
+## ⬇️ Download (easiest — no coding)
+
+**Windows:** grab the installer from the
+**[latest release](https://github.com/sharada-dev/hydrate-buddy/releases/latest)** →
+download `HydrateBuddy-Setup-*.exe` and double-click it.
+
+> Windows SmartScreen may warn *"Windows protected your PC"* because the app
+> isn't code-signed. Click **More info → Run anyway** — it's a normal unsigned
+> indie app. The installer adds Desktop and Start Menu shortcuts; open
+> **Hydrate Buddy** and you're set. Right-click the tray icon → **Start at login**
+> to have her start with Windows.
+
+On macOS/Linux, use the "Run from source" steps below.
+
+---
+
+## 🧑‍💻 Run from source (developers / customising)
 
 ### 1. Install Node.js (one time)
 
@@ -103,6 +119,20 @@ npm run prepare-assets
 This removes the flat background behind your art and writes the transparent
 sprites the app uses (`assets/idle.png`, `assets/drinking.png`, `assets/tray.png`).
 Works best when the source art is on a **plain, solid-colour background**.
+
+---
+
+## 📦 Build the installer yourself
+
+Want to produce your own `.exe` (e.g. after changing the art or messages)?
+
+```bash
+npm run make-icon    # regenerate the app icon from assets/idle.png (optional)
+npm run dist         # builds dist/HydrateBuddy-Setup-<version>.exe
+```
+
+The installer is unsigned, so recipients will see the SmartScreen "Run anyway"
+prompt. To bump the version, edit `version` in `package.json` before building.
 
 ---
 
