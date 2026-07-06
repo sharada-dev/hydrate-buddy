@@ -7,6 +7,7 @@
     "start": "electron .",
     "prepare-assets": "node scripts/remove-bg.js",
     "make-icon": "node scripts/make-icon.js",
+    "make-gif": "node scripts/make-gif.js",
     "autostart:enable": "node scripts/install-autostart.js",
     "autostart:disable": "node scripts/uninstall-autostart.js",
     "dist": "electron-builder --win nsis"
@@ -28,6 +29,7 @@
   "devDependencies": {
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",
+    "gifenc": "^1.0.3",
     "jimp": "0.22.12"
   },
   "build": {

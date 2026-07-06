@@ -4,6 +4,7 @@ A tiny **pixel-art desktop companion** who walks into the corner of your screen
 every **45 minutes** (between **10:00 AM and 11:00 PM IST**) to remind you to
 drink water — then celebrates when you do and quietly walks off.
 
+![Hydrate Buddy walks in, reminds you to drink water, celebrates, and walks off](docs/demo.gif)
 - **YES, I DRANK** → she takes a sip, confetti celebration, and walks off. 🎉
 - **SNOOZE** → *"I'll come back in 10 mins!"* and she returns in 10 minutes.
 - The rest of the time she waits in your **system tray** — right-click it for
@@ -131,6 +132,31 @@ npm run dist         # builds dist/HydrateBuddy-Setup-<version>.exe
 
 The installer is unsigned, so recipients will see the SmartScreen "Run anyway"
 prompt. To bump the version, edit `version` in `package.json` before building.
+
+---
+
+## 🚀 Releasing a new version (maintainers)
+
+Publishing a new installer is **one push**. A
+[GitHub Action](.github/workflows/release.yml) builds the Windows installer and
+attaches it to a release automatically whenever you push a version tag:
+
+```bash
+# bump the version in package.json, commit, tag, and push in one go:
+npm version patch      # 1.0.0 -> 1.0.1 (creates a commit + git tag)
+git push --follow-tags
+```
+
+Or tag manually:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+Within a few minutes the new **`HydrateBuddy-Setup-<version>.exe`** appears on the
+[Releases page](https://github.com/sharada-dev/hydrate-buddy/releases) — no local
+build needed.
 
 ---
 
