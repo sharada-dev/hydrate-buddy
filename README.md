@@ -5,6 +5,7 @@ every **45 minutes** (between **10:00 AM and 11:00 PM IST**) to remind you to
 drink water — then celebrates when you do and quietly walks off.
 
 ![Hydrate Buddy walks in, reminds you to drink water, celebrates, and walks off](docs/demo.gif)
+
 - **YES, I DRANK** → she takes a sip, confetti celebration, and walks off. 🎉
 - **SNOOZE** → *"I'll come back in 10 mins!"* and she returns in 10 minutes.
 - The rest of the time she waits in your **system tray** — right-click it for
