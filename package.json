@@ -1,0 +1,32 @@
+{
+  "name": "hydrate-buddy",
+  "version": "1.0.0",
+  "description": "A pixel-art desktop companion who reminds you to drink water every 45 minutes between 10:00 and 23:00 IST.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "prepare-assets": "node scripts/remove-bg.js",
+    "autostart:enable": "node scripts/install-autostart.js",
+    "autostart:disable": "node scripts/uninstall-autostart.js"
+  },
+  "keywords": [
+    "electron",
+    "desktop-pet",
+    "water-reminder",
+    "hydration",
+    "pixel-art"
+  ],
+  "author": "sharada-dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sharada-dev/hydrate-buddy.git"
+  },
+  "homepage": "https://github.com/sharada-dev/hydrate-buddy#readme",
+  "dependencies": {
+    "jimp": "0.22.12"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0"
+  }
+}

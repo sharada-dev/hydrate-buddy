@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; img-src 'self' data: file:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="stage">
+      <div id="confetti"></div>
+
+      <div id="bubble" class="hidden">
+        <p id="bubble-text">Time to drink water to keep your skin glowing!</p>
+        <div id="buttons">
+          <button id="yes-btn" class="btn btn-yes">YES, I DRANK</button>
+          <button id="snooze-btn" class="btn btn-snooze">SNOOZE</button>
+        </div>
+        <div id="bubble-tail"></div>
+      </div>
+
+      <div id="pet" class="offstage">
+        <img id="sprite-idle" src="../assets/idle.png" alt="" draggable="false" />
+        <img id="sprite-drinking" class="hidden" src="../assets/drinking.png" alt="" draggable="false" />
+      </div>
+    </div>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>
