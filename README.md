@@ -125,6 +125,9 @@ This removes the flat background behind your art and writes the transparent
 sprites the app uses (`assets/idle.png`, `assets/drinking.png`, `assets/tray.png`).
 Works best when the source art is on a **plain, solid-colour background**.
 
+> 💡 No art skills? The [**Make your own character** guide](docs/make-your-own-character.md)
+> has copy-paste AI prompts for generating two matching poses.
+
 ---
 
 ## 🎨 New to code? Make her your own — step by step
@@ -168,9 +171,9 @@ character on a **plain, solid-colour background**:
 - a **standing** pose → save it as `assets/raw/idle.png`
 - a **drinking/sipping** pose → save it as `assets/raw/drinking.png`
 
-Easiest way to make them: ask any AI image tool (ChatGPT, Gemini, etc.) for
-*"a full-body pixel-art character, [describe them], plain background, standing
-pose"*, then again for a *"...drinking from a water bottle"* pose. Then run:
+Easiest way to make them: follow the
+[**Make your own character** guide](docs/make-your-own-character.md) — it has
+copy-paste AI prompts (ChatGPT, Gemini, etc.) for two matching poses. Then run:
 
 ```bash
 npm run prepare-assets
