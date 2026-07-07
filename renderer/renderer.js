@@ -9,21 +9,46 @@ const snoozeBtn = document.getElementById('snooze-btn');
 const confetti = document.getElementById('confetti');
 
 let busy = false; // ignore clicks while an animation is running
+let currentName = ''; // set from the reminder payload each time she appears
 
-const PROMPTS = [
-  'Time to drink water to keep your skin glowing!',
-  'Hydration check! Take a sip of water 💧',
-  "Water break! Your body will thank you.",
-  'Psst… a few sips of water? Stay glowing!',
-  "Don't forget me — drink some water!",
-];
+const pick = (arr) => arr[(Math.random() * arr.length) | 0];
 
-const CHEERS = [
-  'Yay! Stay glowing ✨',
-  'Amazing! Keep it up 💧',
-  'That\'s the spirit! 🥤',
-  'Hydrated and happy! ✨',
-];
+// Personalised when a name is set, generic otherwise.
+function promptFor(name) {
+  if (name) {
+    return pick([
+      `${name}, time to drink water to keep your skin glowing!`,
+      `${name}, hydration check! Take a sip 💧`,
+      `Water break, ${name}! Your body will thank you.`,
+      `Psst ${name}… a few sips of water? Stay glowing!`,
+      `Don't forget me, ${name} — drink some water!`,
+    ]);
+  }
+  return pick([
+    'Time to drink water to keep your skin glowing!',
+    'Hydration check! Take a sip of water 💧',
+    'Water break! Your body will thank you.',
+    'Psst… a few sips of water? Stay glowing!',
+    "Don't forget me — drink some water!",
+  ]);
+}
+
+function cheerFor(name) {
+  if (name) {
+    return pick([
+      `Yay ${name}! Stay glowing ✨`,
+      `Amazing, ${name}! Keep it up 💧`,
+      `That's the spirit, ${name}! 🥤`,
+      `Hydrated and happy, ${name}! ✨`,
+    ]);
+  }
+  return pick([
+    'Yay! Stay glowing ✨',
+    'Amazing! Keep it up 💧',
+    "That's the spirit! 🥤",
+    'Hydrated and happy! ✨',
+  ]);
+}
 
 function wait(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -90,7 +115,7 @@ function burstConfetti() {
 }
 
 async function celebrate() {
-  showBubble(CHEERS[(Math.random() * CHEERS.length) | 0], false);
+  showBubble(cheerFor(currentName), false);
   showDrinking(true); // she takes a sip
   await wait(950);
   showDrinking(false);
@@ -101,11 +126,12 @@ async function celebrate() {
 }
 
 // ------------------------------------------------------------------- flow
-async function runReminder() {
+async function runReminder(name) {
   if (busy) return;
   busy = true;
+  currentName = name || '';
   await walkIn();
-  showBubble(PROMPTS[(Math.random() * PROMPTS.length) | 0], true);
+  showBubble(promptFor(currentName), true);
   busy = false;
 }
 
@@ -136,4 +162,4 @@ yesBtn.addEventListener('click', onYes);
 snoozeBtn.addEventListener('click', onSnooze);
 
 // Triggered by the main process every 45 min (and once shortly after launch).
-window.hydrate.onShow(() => runReminder());
+window.hydrate.onShow((payload) => runReminder(payload && payload.name));

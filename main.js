@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 // ---- Configuration -------------------------------------------------------
 const ACTIVE_START_HOUR = 10; // 10:00 IST — first hour reminders may appear
@@ -14,9 +15,31 @@ const EDGE_MARGIN = 8;
 // --------------------------------------------------------------------------
 
 let win = null;
+let nameWin = null;
 let tray = null;
 let reminderTimer = null;
 let paused = false;
+let userName = ''; // personalises the greeting; stored per-user, never in the repo
+
+// ---- Per-user config (lives in the OS user-data folder, not this repo) ----
+function configPath() {
+  return path.join(app.getPath('userData'), 'config.json');
+}
+function loadConfig() {
+  try {
+    return JSON.parse(fs.readFileSync(configPath(), 'utf8'));
+  } catch (e) {
+    return {};
+  }
+}
+function saveConfig(cfg) {
+  try {
+    fs.mkdirSync(path.dirname(configPath()), { recursive: true });
+    fs.writeFileSync(configPath(), JSON.stringify(cfg, null, 2));
+  } catch (e) {
+    console.error('Failed to save config:', e);
+  }
+}
 
 /** Current wall-clock in IST, independent of the machine's own timezone. */
 function nowIST() {
@@ -86,7 +109,7 @@ function triggerReminder() {
   positionWindow();
   win.showInactive(); // appear without stealing keyboard focus
   win.setAlwaysOnTop(true, 'screen-saver');
-  win.webContents.send('reminder:show');
+  win.webContents.send('reminder:show', { name: userName });
 }
 
 function updateTrayTooltip(delayMs) {
@@ -133,6 +156,33 @@ function createWindow() {
   });
 }
 
+function openNameWindow() {
+  if (nameWin) {
+    nameWin.focus();
+    return;
+  }
+  nameWin = new BrowserWindow({
+    width: 380,
+    height: 240,
+    title: 'Your name',
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    skipTaskbar: false,
+    alwaysOnTop: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  nameWin.setMenuBarVisibility(false);
+  nameWin.loadFile(path.join(__dirname, 'renderer', 'name.html'));
+  nameWin.on('closed', () => {
+    nameWin = null;
+  });
+}
+
 function createTray() {
   const iconPath = path.join(__dirname, 'assets', 'tray.png');
   let icon = nativeImage.createFromPath(iconPath);
@@ -147,6 +197,10 @@ function createTray() {
 function rebuildTrayMenu() {
   const template = [
     { label: 'Drink now 💧', click: () => triggerReminder() },
+    {
+      label: userName ? `Set your name… (${userName})` : 'Set your name…',
+      click: () => openNameWindow(),
+    },
     {
       label: 'Pause reminders',
       type: 'checkbox',
@@ -204,6 +258,19 @@ ipcMain.on('reminder:snooze', () => scheduleNext(SNOOZE_MIN));
 ipcMain.on('reminder:hide', () => {
   if (win) win.hide();
 });
+
+ipcMain.handle('name:get', () => userName);
+ipcMain.handle('name:save', (_e, value) => {
+  userName = String(value || '').trim().slice(0, 24);
+  const cfg = loadConfig();
+  cfg.name = userName;
+  saveConfig(cfg);
+  if (tray) rebuildTrayMenu(); // reflect the new name in the tray label
+  return userName;
+});
+ipcMain.on('name:close', () => {
+  if (nameWin) nameWin.close();
+});
 // --------------------------------------------------------------------------
 
 // Only allow a single running instance.
@@ -214,6 +281,7 @@ if (!gotLock) {
   app.on('second-instance', () => triggerReminder());
 
   app.whenReady().then(() => {
+    userName = (loadConfig().name || '').trim();
     createWindow();
     createTray();
 

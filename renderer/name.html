@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; style-src 'self' 'unsafe-inline';" />
+    <title>Your name</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: #fdfdf7;
+        color: #1c1c1c;
+        padding: 22px 24px;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      h1 { font-size: 16px; margin-bottom: 4px; }
+      p.sub { font-size: 12px; color: #666; margin-bottom: 16px; }
+      input {
+        width: 100%;
+        font-size: 15px;
+        padding: 10px 12px;
+        border: 2px solid #1c1c1c;
+        border-radius: 6px;
+        outline: none;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+      input:focus { border-color: #37c24a; }
+      .row { display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; }
+      button {
+        font-size: 13px;
+        font-weight: 600;
+        padding: 9px 16px;
+        border: 2px solid #1c1c1c;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .save { background: #37c24a; color: #fff; }
+      .save:hover { background: #2fae41; }
+      .cancel { background: #fff; }
+      .cancel:hover { background: #eee; }
+      p.hint { font-size: 11px; color: #888; margin-top: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>What should she call you?</h1>
+    <p class="sub">She'll use your name in her reminders.</p>
+    <input id="name" maxlength="24" placeholder="e.g. Alex" autocomplete="off" />
+    <div class="row">
+      <button id="cancel" class="cancel">Cancel</button>
+      <button id="save" class="save">Save</button>
+    </div>
+    <p class="hint">Leave it blank to keep her reminders generic.</p>
+    <script src="name.js"></script>
+  </body>
+</html>
