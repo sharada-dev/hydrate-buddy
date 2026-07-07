@@ -127,6 +127,79 @@ Works best when the source art is on a **plain, solid-colour background**.
 
 ---
 
+## 🎨 New to code? Make her your own — step by step
+
+Never touched code before? No problem. You can change her reminder timing or swap
+in a completely different character (a guy, a cat, literally anyone) without
+knowing how to program — you're just editing a couple of labelled lines and
+dropping in some images. About 10 minutes.
+
+**You'll need:** a Windows PC and [Node.js](https://nodejs.org) — download the
+**LTS** version and click through the installer.
+
+### 1. Get your own copy of the code
+On the [repo page](https://github.com/sharada-dev/hydrate-buddy), click the green
+**Code** button → **Download ZIP**, then unzip it somewhere easy like your Desktop.
+*(Optional: click **Fork** first if you want your own copy saved on GitHub.)*
+
+### 2. Open a terminal in that folder
+Open the unzipped `hydrate-buddy` folder in File Explorer. Click the **address bar**,
+type `powershell`, and press **Enter** — a terminal opens already pointing at the
+folder. Run this once to set things up:
+
+```bash
+npm install
+```
+
+### 3. Make your change
+
+**➡️ To change the timing:** open `main.js` in any text editor (Notepad works;
+[VS Code](https://code.visualstudio.com) is free and nicer). Near the top, edit
+these labelled lines and **save**:
+
+```js
+const INTERVAL_MIN = 45;      // minutes between reminders — change 45 to whatever
+const ACTIVE_START_HOUR = 10; // first hour she reminds you (24-hour clock)
+const ACTIVE_END_HOUR = 23;   // she goes quiet after this hour
+```
+
+**➡️ To swap the character** (e.g. a male version): you need **two images** of your
+character on a **plain, solid-colour background**:
+- a **standing** pose → save it as `assets/raw/idle.png`
+- a **drinking/sipping** pose → save it as `assets/raw/drinking.png`
+
+Easiest way to make them: ask any AI image tool (ChatGPT, Gemini, etc.) for
+*"a full-body pixel-art character, [describe them], plain background, standing
+pose"*, then again for a *"...drinking from a water bottle"* pose. Then run:
+
+```bash
+npm run prepare-assets
+```
+
+That auto-removes the background and preps her sprites.
+
+### 4. See it live
+
+```bash
+npm start
+```
+
+She pops up with your changes. Tweak and re-run until it feels right.
+
+### 5. (Optional) Make your own installer to share
+
+Want a `.exe` of *your* version to send around?
+
+```bash
+npm run make-icon   # refresh the app icon from your new character (optional)
+npm run dist        # builds your installer into the dist/ folder
+```
+
+That's it — you've made your own Hydrate Buddy. 🎉 The
+[settings table above](#️-make-it-yours) lists everything you can tweak.
+
+---
+
 ## 📦 Build the installer yourself
 
 Want to produce your own `.exe` (e.g. after changing the art or messages)?
