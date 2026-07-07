@@ -151,7 +151,10 @@ async function onSnooze() {
   if (busy) return;
   busy = true;
   window.hydrate.snooze(); // come back in 10 min
-  showBubble("I'll come back in 10 mins!", false);
+  const msg = currentName
+    ? `I'll come back in 10 mins, ${currentName}!`
+    : "I'll come back in 10 mins!";
+  showBubble(msg, false);
   await wait(1400);
   await walkOut();
   window.hydrate.hide();
