@@ -106,6 +106,11 @@ function triggerReminder() {
     scheduleNext(INTERVAL_MIN);
     return;
   }
+  // Re-read the name each time so a failed/early startup read can't strand the
+  // session name-less (config lives on the roaming profile, which may not be
+  // ready the instant auto-start launches at login).
+  userName = (loadConfig().name || '').trim();
+
   positionWindow();
   win.showInactive(); // appear without stealing keyboard focus
   win.setAlwaysOnTop(true, 'screen-saver');
