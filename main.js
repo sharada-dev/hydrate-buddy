@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, powerMonitor } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -17,7 +17,8 @@ const EDGE_MARGIN = 8;
 let win = null;
 let nameWin = null;
 let tray = null;
-let reminderTimer = null;
+let ticker = null;
+let nextReminderAt = 0; // epoch ms of the next due reminder
 let paused = false;
 let userName = ''; // personalises the greeting; stored per-user, never in the repo
 
@@ -63,34 +64,23 @@ function isWithinActiveHours() {
   return hour >= ACTIVE_START_HOUR && hour < ACTIVE_END_HOUR;
 }
 
-/** ms from now until the next 10:00 IST. */
-function msUntilNextActiveStart() {
-  const { hour, minute, second } = nowIST();
-  const minsNow = hour * 60 + minute;
-  const target = ACTIVE_START_HOUR * 60;
-  let deltaMin = minsNow < target ? target - minsNow : 24 * 60 - minsNow + target;
-  return deltaMin * 60 * 1000 - second * 1000;
+const TICK_MS = 30000; // re-check every 30s — short so it survives sleep/wake
+
+/**
+ * Runs on a short repeating timer. Because it only ever checks the *current*
+ * wall-clock (never a single long countdown), reminders keep working after the
+ * laptop sleeps and wakes — a long setTimeout would silently go stale.
+ */
+function tick() {
+  if (paused || !win) return;
+  if (win.isVisible()) return; // a reminder is already on screen
+  if (!isWithinActiveHours()) return; // outside 10:00–23:00 IST
+  if (Date.now() >= nextReminderAt) triggerReminder();
 }
 
-function scheduleNext(minutes) {
-  if (reminderTimer) {
-    clearTimeout(reminderTimer);
-    reminderTimer = null;
-  }
-  if (paused) return;
-
-  const { hour, minute } = nowIST();
-  const projected = hour * 60 + minute + minutes;
-
-  let delayMs;
-  if (isWithinActiveHours() && projected < ACTIVE_END_HOUR * 60) {
-    delayMs = minutes * 60 * 1000;
-  } else {
-    delayMs = msUntilNextActiveStart();
-  }
-
-  reminderTimer = setTimeout(triggerReminder, delayMs);
-  updateTrayTooltip(delayMs);
+function startScheduler() {
+  if (ticker) clearInterval(ticker);
+  ticker = setInterval(tick, TICK_MS);
 }
 
 function positionWindow() {
@@ -102,10 +92,11 @@ function positionWindow() {
 
 function triggerReminder() {
   if (paused || !win) return;
-  if (!isWithinActiveHours()) {
-    scheduleNext(INTERVAL_MIN);
-    return;
-  }
+  if (!isWithinActiveHours()) return;
+
+  nextReminderAt = Date.now() + INTERVAL_MIN * 60000; // schedule the next nudge
+  updateTrayTooltip();
+
   // Re-read the name each time so a failed/early startup read can't strand the
   // session name-less (config lives on the roaming profile, which may not be
   // ready the instant auto-start launches at login).
@@ -117,13 +108,13 @@ function triggerReminder() {
   win.webContents.send('reminder:show', { name: userName });
 }
 
-function updateTrayTooltip(delayMs) {
+function updateTrayTooltip() {
   if (!tray) return;
   if (paused) {
     tray.setToolTip('Hydrate Buddy — paused');
     return;
   }
-  const mins = Math.round(delayMs / 60000);
+  const mins = Math.max(0, Math.round((nextReminderAt - Date.now()) / 60000));
   tray.setToolTip(`Hydrate Buddy — next nudge in ~${mins} min`);
 }
 
@@ -213,13 +204,11 @@ function rebuildTrayMenu() {
       click: (item) => {
         paused = item.checked;
         if (paused) {
-          if (reminderTimer) clearTimeout(reminderTimer);
-          reminderTimer = null;
           if (win) win.hide();
-          updateTrayTooltip(0);
         } else {
-          scheduleNext(INTERVAL_MIN);
+          nextReminderAt = Date.now() + INTERVAL_MIN * 60000;
         }
+        updateTrayTooltip();
       },
     },
   ];
@@ -258,8 +247,8 @@ function rebuildTrayMenu() {
 }
 
 // ---- IPC from the renderer ----------------------------------------------
-ipcMain.on('reminder:yes', () => scheduleNext(INTERVAL_MIN));
-ipcMain.on('reminder:snooze', () => scheduleNext(SNOOZE_MIN));
+ipcMain.on('reminder:yes', () => { nextReminderAt = Date.now() + INTERVAL_MIN * 60000; });
+ipcMain.on('reminder:snooze', () => { nextReminderAt = Date.now() + SNOOZE_MIN * 60000; });
 ipcMain.on('reminder:hide', () => {
   if (win) win.hide();
 });
@@ -289,13 +278,20 @@ if (!gotLock) {
     userName = (loadConfig().name || '').trim();
     createWindow();
     createTray();
+    startScheduler();
 
-    if (isWithinActiveHours()) {
-      // Say hello shortly after launch so you can see the whole flow,
-      // then settle into the normal 45-minute cadence.
-      reminderTimer = setTimeout(triggerReminder, GREETING_DELAY_MS);
-    } else {
-      scheduleNext(INTERVAL_MIN);
+    // Say hello shortly after launch (within active hours) so you see it works;
+    // otherwise the first nudge waits for the next active window.
+    nextReminderAt =
+      Date.now() + (isWithinActiveHours() ? GREETING_DELAY_MS : INTERVAL_MIN * 60000);
+    setTimeout(tick, GREETING_DELAY_MS + 300);
+
+    // Re-check the moment the laptop wakes/unlocks, so a due nudge isn't missed.
+    try {
+      powerMonitor.on('resume', tick);
+      powerMonitor.on('unlock-screen', tick);
+    } catch (e) {
+      /* powerMonitor unavailable on this platform */
     }
   });
 }
