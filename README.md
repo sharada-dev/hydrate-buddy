@@ -103,10 +103,10 @@ LaunchAgent.
 > timezone is. Living elsewhere? Change `'Asia/Kolkata'` in `nowIST()` inside
 > `main.js` to [your timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 
-**Your name** — right-click the tray icon → **Set your name…** and she'll greet
-you by name (*"Alex, time to drink water…"*). Leave it blank to keep her
-reminders generic. Your name is stored only in your own machine's app-data
-folder — it never goes into this repo.
+**Your name** — the first time you open her she'll ask your name so she can greet
+you personally (*"Alex, time to drink water…"*). Change it anytime from the tray
+icon → **Set your name…**, or leave it blank to keep reminders generic. Your name
+is stored only in your own machine's app-data folder — never in this repo.
 
 **Messages** — the reminder and cheer lines live in `promptFor` / `cheerFor` in
 [`renderer/renderer.js`](renderer/renderer.js).

@@ -275,10 +275,19 @@ if (!gotLock) {
   app.on('second-instance', () => triggerReminder());
 
   app.whenReady().then(() => {
-    userName = (loadConfig().name || '').trim();
+    const cfg = loadConfig();
+    userName = (cfg.name || '').trim();
     createWindow();
     createTray();
     startScheduler();
+
+    // First ever launch: gently ask the user their name (just once). The flag
+    // means we never nag again — even if they leave it blank on purpose.
+    if (!cfg.askedName) {
+      cfg.askedName = true;
+      saveConfig(cfg);
+      setTimeout(() => openNameWindow(), 1500);
+    }
 
     // Say hello shortly after launch (within active hours) so you see it works;
     // otherwise the first nudge waits for the next active window.
