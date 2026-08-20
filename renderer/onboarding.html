@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; style-src 'self' 'unsafe-inline';" />
+    <title>Welcome to Hydrate Buddy</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: #fdfdf7;
+        color: #1c1c1c;
+        padding: 22px 24px;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .steps { font-size: 11px; color: #999; margin-bottom: 8px; letter-spacing: 0.4px; }
+      h1 { font-size: 16px; margin-bottom: 4px; }
+      p.sub { font-size: 12px; color: #666; margin-bottom: 16px; }
+      input[type='text'], input[type='number'] {
+        width: 100%;
+        font-size: 15px;
+        padding: 10px 12px;
+        border: 2px solid #1c1c1c;
+        border-radius: 6px;
+        outline: none;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+      input:focus { border-color: #37c24a; }
+      .chips { display: flex; gap: 8px; margin: 4px 0 14px; flex-wrap: wrap; }
+      .chip {
+        font-size: 13px;
+        padding: 7px 12px;
+        border: 2px solid #1c1c1c;
+        border-radius: 20px;
+        background: #fff;
+        cursor: pointer;
+      }
+      .chip.active { background: #37c24a; color: #fff; border-color: #37c24a; }
+      .field { display: flex; align-items: center; gap: 10px; }
+      .field input { width: 90px; }
+      .field span { font-size: 13px; color: #333; }
+      .row { display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; }
+      button.nav {
+        font-size: 13px;
+        font-weight: 600;
+        padding: 9px 16px;
+        border: 2px solid #1c1c1c;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .primary { background: #37c24a; color: #fff; }
+      .primary:hover { background: #2fae41; }
+      .ghost { background: #fff; }
+      .ghost:hover { background: #eee; }
+      .hidden { display: none !important; }
+      p.hint { font-size: 11px; color: #888; margin-top: 12px; }
+    </style>
+  </head>
+  <body>
+    <!-- Step 1: name -->
+    <div id="step1">
+      <div class="steps">STEP 1 OF 2</div>
+      <h1>What should she call you?</h1>
+      <p class="sub">She'll use your name in her reminders.</p>
+      <input id="name" type="text" maxlength="24" placeholder="e.g. Alex" autocomplete="off" />
+      <div class="row">
+        <button id="next" class="nav primary">Next →</button>
+      </div>
+      <p class="hint">Leave it blank to keep her reminders generic.</p>
+    </div>
+
+    <!-- Step 2: interval -->
+    <div id="step2" class="hidden">
+      <div class="steps">STEP 2 OF 2</div>
+      <h1>How often should she nudge you?</h1>
+      <p class="sub">Pick a reminder interval — tap a preset or type your own.</p>
+      <div class="chips" id="chips">
+        <button class="chip" data-min="15">15 min</button>
+        <button class="chip" data-min="30">30 min</button>
+        <button class="chip" data-min="45">45 min</button>
+        <button class="chip" data-min="60">60 min</button>
+        <button class="chip" data-min="90">90 min</button>
+      </div>
+      <div class="field">
+        <input id="mins" type="number" min="1" max="720" />
+        <span>minutes</span>
+      </div>
+      <div class="row">
+        <button id="back" class="nav ghost">← Back</button>
+        <button id="done" class="nav primary">Done</button>
+      </div>
+      <p class="hint">You can change both anytime from her tray icon.</p>
+    </div>
+
+    <script src="onboarding.js"></script>
+  </body>
+</html>

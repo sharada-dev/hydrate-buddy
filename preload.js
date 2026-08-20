@@ -15,4 +15,6 @@ contextBridge.exposeInMainWorld('hydrate', {
   getInterval: () => ipcRenderer.invoke('interval:get'),
   saveInterval: (value) => ipcRenderer.invoke('interval:save', value),
   closeIntervalWindow: () => ipcRenderer.send('interval:close'),
+  // first-run onboarding wizard
+  closeOnboarding: () => ipcRenderer.send('onboarding:close'),
 });

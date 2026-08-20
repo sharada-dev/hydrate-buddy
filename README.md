@@ -8,8 +8,10 @@ drink water — then celebrates when you do and quietly walks off.
 
 - **YES, I DRANK** → she takes a sip, confetti celebration, and walks off. 🎉
 - **SNOOZE** → *"I'll come back in 10 mins!"* and she returns in 10 minutes.
+- **She greets you by name** and lets you **pick your reminder interval** — a
+  quick 2-step welcome sets both up the first time you open her.
 - The rest of the time she waits in your **system tray** — right-click it for
-  **Drink now**, **Pause reminders**, or **Quit**.
+  **Drink now**, **Set your name…**, **Reminder every X min**, **Pause**, or **Quit**.
 
 Windows is fully supported (including launch-at-login). It also runs on macOS and
 Linux — only the one-command auto-start setup is Windows-only there (see below).
@@ -29,6 +31,22 @@ download `HydrateBuddy-Setup-*.exe` and double-click it.
 > to have her start with Windows.
 
 On macOS/Linux, use the "Run from source" steps below.
+
+---
+
+## 👋 First launch
+
+The first time you open her, a quick **2-step welcome** gets you set up — your
+name, then how often she should nudge you:
+
+<p align="center">
+  <img src="docs/onboarding-1.png" width="49%" alt="Step 1 — What should she call you?" />
+  <img src="docs/onboarding-2.png" width="49%" alt="Step 2 — How often should she nudge you?" />
+</p>
+
+That's it — she then walks in and greets you **by name**. You can change either
+later, anytime, from her **tray icon** (right-click → *Set your name…* or
+*Reminder every X min*).
 
 ---
 

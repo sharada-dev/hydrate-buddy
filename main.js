@@ -18,6 +18,7 @@ const EDGE_MARGIN = 8;
 let win = null;
 let nameWin = null;
 let intervalWin = null;
+let onboardWin = null;
 let tray = null;
 let ticker = null;
 let nextReminderAt = 0; // epoch ms of the next due reminder
@@ -250,6 +251,38 @@ function openIntervalWindow() {
   });
 }
 
+/** First-run welcome: a 2-step wizard for name, then reminder interval. */
+function openOnboardingWindow() {
+  if (onboardWin) {
+    bringToFront(onboardWin);
+    return;
+  }
+  onboardWin = new BrowserWindow({
+    width: 400,
+    height: 340,
+    title: 'Welcome to Hydrate Buddy',
+    show: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    skipTaskbar: false,
+    alwaysOnTop: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  onboardWin.setMenuBarVisibility(false);
+  onboardWin.loadFile(path.join(__dirname, 'renderer', 'onboarding.html'));
+  onboardWin.once('ready-to-show', () => bringToFront(onboardWin));
+  onboardWin.on('closed', () => {
+    onboardWin = null;
+    // Wizard finished — now do the first hello, personalised with the new name.
+    setTimeout(() => triggerReminder(), 800);
+  });
+}
+
 function createTray() {
   const iconPath = path.join(__dirname, 'assets', 'tray.png');
   let icon = nativeImage.createFromPath(iconPath);
@@ -363,6 +396,9 @@ ipcMain.handle('interval:save', (_e, value) => {
 ipcMain.on('interval:close', () => {
   if (intervalWin) intervalWin.close();
 });
+ipcMain.on('onboarding:close', () => {
+  if (onboardWin) onboardWin.close();
+});
 // --------------------------------------------------------------------------
 
 // Only allow a single running instance.
@@ -380,19 +416,20 @@ if (!gotLock) {
     createTray();
     startScheduler();
 
-    // First ever launch: gently ask the user their name (just once). The flag
-    // means we never nag again — even if they leave it blank on purpose.
+    // First ever launch: run the welcome wizard (name + interval). We stay quiet
+    // during onboarding and say hello only once it's done (see the wizard's
+    // 'closed' handler), so the pet and the wizard don't both pop up at once.
     if (!cfg.askedName) {
       cfg.askedName = true;
       saveConfig(cfg);
-      setTimeout(() => openNameWindow(), 1500);
+      nextReminderAt = Date.now() + intervalMin * 60000; // no greeting yet
+      setTimeout(() => openOnboardingWindow(), 1500);
+    } else {
+      // Returning user: say hello shortly after launch so you see it works.
+      nextReminderAt =
+        Date.now() + (isWithinActiveHours() ? GREETING_DELAY_MS : intervalMin * 60000);
+      setTimeout(tick, GREETING_DELAY_MS + 300);
     }
-
-    // Say hello shortly after launch (within active hours) so you see it works;
-    // otherwise the first nudge waits for the next active window.
-    nextReminderAt =
-      Date.now() + (isWithinActiveHours() ? GREETING_DELAY_MS : intervalMin * 60000);
-    setTimeout(tick, GREETING_DELAY_MS + 300);
 
     // Re-check the moment the laptop wakes/unlocks, so a due nudge isn't missed.
     try {
