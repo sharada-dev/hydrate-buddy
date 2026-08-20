@@ -90,14 +90,18 @@ LaunchAgent.
 
 ## ⚙️ Make it yours
 
-**Timing** — edit the constants at the top of [`main.js`](main.js):
+**Reminder interval** — right-click the tray icon → **Reminder every X min** →
+pick **15 / 30 / 45 / 60 / 90** minutes, or **Custom…** for any value (1–720 min).
+No code needed; it's saved per-user.
 
-| Setting             | What it does                          | Default |
-| ------------------- | ------------------------------------- | ------- |
-| `ACTIVE_START_HOUR` | First hour reminders may appear (IST) | `10`    |
-| `ACTIVE_END_HOUR`   | Reminders stop after this hour (IST)  | `23`    |
-| `INTERVAL_MIN`      | Minutes between reminders             | `45`    |
-| `SNOOZE_MIN`        | Snooze length in minutes              | `10`    |
+**Other timing** — edit the constants at the top of [`main.js`](main.js):
+
+| Setting                | What it does                          | Default |
+| ---------------------- | ------------------------------------- | ------- |
+| `ACTIVE_START_HOUR`    | First hour reminders may appear (IST) | `10`    |
+| `ACTIVE_END_HOUR`      | Reminders stop after this hour (IST)  | `23`    |
+| `DEFAULT_INTERVAL_MIN` | Default minutes between reminders     | `45`    |
+| `SNOOZE_MIN`           | Snooze length in minutes              | `10`    |
 
 > Times are computed in **IST (Asia/Kolkata)** no matter what your computer's
 > timezone is. Living elsewhere? Change `'Asia/Kolkata'` in `nowIST()` inside

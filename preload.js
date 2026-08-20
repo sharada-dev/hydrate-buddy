@@ -11,4 +11,8 @@ contextBridge.exposeInMainWorld('hydrate', {
   getName: () => ipcRenderer.invoke('name:get'),
   saveName: (value) => ipcRenderer.invoke('name:save', value),
   closeNameWindow: () => ipcRenderer.send('name:close'),
+  // reminder-interval settings (used by the "Custom…" interval window)
+  getInterval: () => ipcRenderer.invoke('interval:get'),
+  saveInterval: (value) => ipcRenderer.invoke('interval:save', value),
+  closeIntervalWindow: () => ipcRenderer.send('interval:close'),
 });

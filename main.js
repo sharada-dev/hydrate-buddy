@@ -5,7 +5,8 @@ const fs = require('fs');
 // ---- Configuration -------------------------------------------------------
 const ACTIVE_START_HOUR = 10; // 10:00 IST — first hour reminders may appear
 const ACTIVE_END_HOUR = 23;   // 23:00 IST (11 PM) — reminders stop after this
-const INTERVAL_MIN = 45;      // normal cadence
+const DEFAULT_INTERVAL_MIN = 45; // used until the user picks their own
+const INTERVAL_OPTIONS = [15, 30, 45, 60, 90]; // tray menu presets (minutes)
 const SNOOZE_MIN = 10;        // "I'll come back in 10 mins"
 const GREETING_DELAY_MS = 6000; // first hello after launch, so you can see it work
 
@@ -16,11 +17,13 @@ const EDGE_MARGIN = 8;
 
 let win = null;
 let nameWin = null;
+let intervalWin = null;
 let tray = null;
 let ticker = null;
 let nextReminderAt = 0; // epoch ms of the next due reminder
 let paused = false;
 let userName = ''; // personalises the greeting; stored per-user, never in the repo
+let intervalMin = DEFAULT_INTERVAL_MIN; // minutes between reminders (user-configurable)
 
 // ---- Per-user config (lives in the OS user-data folder, not this repo) ----
 function configPath() {
@@ -83,6 +86,24 @@ function startScheduler() {
   ticker = setInterval(tick, TICK_MS);
 }
 
+/** Clamp a requested interval to a sane whole number of minutes. */
+function normalizeInterval(v) {
+  const n = Math.round(Number(v));
+  if (!Number.isFinite(n) || n < 1) return DEFAULT_INTERVAL_MIN;
+  return Math.min(n, 720); // cap at 12 hours
+}
+
+/** Change the reminder cadence, persist it, and restart the countdown. */
+function applyInterval(minutes) {
+  intervalMin = normalizeInterval(minutes);
+  const cfg = loadConfig();
+  cfg.intervalMin = intervalMin;
+  saveConfig(cfg);
+  nextReminderAt = Date.now() + intervalMin * 60000; // restart from now
+  updateTrayTooltip();
+  if (tray) rebuildTrayMenu(); // reflect the newly-checked option
+}
+
 function positionWindow() {
   const { workArea } = screen.getPrimaryDisplay();
   const x = workArea.x + workArea.width - WIN_WIDTH - EDGE_MARGIN;
@@ -94,7 +115,7 @@ function triggerReminder() {
   if (paused || !win) return;
   if (!isWithinActiveHours()) return;
 
-  nextReminderAt = Date.now() + INTERVAL_MIN * 60000; // schedule the next nudge
+  nextReminderAt = Date.now() + intervalMin * 60000; // schedule the next nudge
   updateTrayTooltip();
 
   // Re-read the name each time so a failed/early startup read can't strand the
@@ -179,6 +200,33 @@ function openNameWindow() {
   });
 }
 
+function openIntervalWindow() {
+  if (intervalWin) {
+    intervalWin.focus();
+    return;
+  }
+  intervalWin = new BrowserWindow({
+    width: 380,
+    height: 250,
+    title: 'Reminder interval',
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    skipTaskbar: false,
+    alwaysOnTop: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  intervalWin.setMenuBarVisibility(false);
+  intervalWin.loadFile(path.join(__dirname, 'renderer', 'interval.html'));
+  intervalWin.on('closed', () => {
+    intervalWin = null;
+  });
+}
+
 function createTray() {
   const iconPath = path.join(__dirname, 'assets', 'tray.png');
   let icon = nativeImage.createFromPath(iconPath);
@@ -198,6 +246,24 @@ function rebuildTrayMenu() {
       click: () => openNameWindow(),
     },
     {
+      label: `Reminder every ${intervalMin} min`,
+      submenu: [
+        ...INTERVAL_OPTIONS.map((m) => ({
+          label: `${m} minutes`,
+          type: 'radio',
+          checked: intervalMin === m,
+          click: () => applyInterval(m),
+        })),
+        { type: 'separator' },
+        {
+          label: 'Custom…',
+          type: 'radio',
+          checked: !INTERVAL_OPTIONS.includes(intervalMin),
+          click: () => openIntervalWindow(),
+        },
+      ],
+    },
+    {
       label: 'Pause reminders',
       type: 'checkbox',
       checked: paused,
@@ -206,7 +272,7 @@ function rebuildTrayMenu() {
         if (paused) {
           if (win) win.hide();
         } else {
-          nextReminderAt = Date.now() + INTERVAL_MIN * 60000;
+          nextReminderAt = Date.now() + intervalMin * 60000;
         }
         updateTrayTooltip();
       },
@@ -247,7 +313,7 @@ function rebuildTrayMenu() {
 }
 
 // ---- IPC from the renderer ----------------------------------------------
-ipcMain.on('reminder:yes', () => { nextReminderAt = Date.now() + INTERVAL_MIN * 60000; });
+ipcMain.on('reminder:yes', () => { nextReminderAt = Date.now() + intervalMin * 60000; });
 ipcMain.on('reminder:snooze', () => { nextReminderAt = Date.now() + SNOOZE_MIN * 60000; });
 ipcMain.on('reminder:hide', () => {
   if (win) win.hide();
@@ -265,6 +331,15 @@ ipcMain.handle('name:save', (_e, value) => {
 ipcMain.on('name:close', () => {
   if (nameWin) nameWin.close();
 });
+
+ipcMain.handle('interval:get', () => intervalMin);
+ipcMain.handle('interval:save', (_e, value) => {
+  applyInterval(value);
+  return intervalMin;
+});
+ipcMain.on('interval:close', () => {
+  if (intervalWin) intervalWin.close();
+});
 // --------------------------------------------------------------------------
 
 // Only allow a single running instance.
@@ -277,6 +352,7 @@ if (!gotLock) {
   app.whenReady().then(() => {
     const cfg = loadConfig();
     userName = (cfg.name || '').trim();
+    intervalMin = normalizeInterval(cfg.intervalMin);
     createWindow();
     createTray();
     startScheduler();
@@ -292,7 +368,7 @@ if (!gotLock) {
     // Say hello shortly after launch (within active hours) so you see it works;
     // otherwise the first nudge waits for the next active window.
     nextReminderAt =
-      Date.now() + (isWithinActiveHours() ? GREETING_DELAY_MS : INTERVAL_MIN * 60000);
+      Date.now() + (isWithinActiveHours() ? GREETING_DELAY_MS : intervalMin * 60000);
     setTimeout(tick, GREETING_DELAY_MS + 300);
 
     // Re-check the moment the laptop wakes/unlocks, so a due nudge isn't missed.
