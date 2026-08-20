@@ -173,15 +173,35 @@ function createWindow() {
   });
 }
 
+/** Force a small settings window to actually pop to the foreground on Windows,
+ *  where a background/tray app is otherwise blocked from stealing focus. */
+function bringToFront(w) {
+  if (!w || w.isDestroyed()) return;
+  w.center();
+  w.show();
+  w.setAlwaysOnTop(true, 'screen-saver');
+  w.focus();
+  w.moveTop();
+  try {
+    w.flashFrame(true);
+    setTimeout(() => {
+      if (w && !w.isDestroyed()) w.flashFrame(false);
+    }, 2500);
+  } catch (e) {
+    /* flashFrame unsupported on this platform */
+  }
+}
+
 function openNameWindow() {
   if (nameWin) {
-    nameWin.focus();
+    bringToFront(nameWin);
     return;
   }
   nameWin = new BrowserWindow({
     width: 380,
     height: 240,
     title: 'Your name',
+    show: false,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -195,6 +215,7 @@ function openNameWindow() {
   });
   nameWin.setMenuBarVisibility(false);
   nameWin.loadFile(path.join(__dirname, 'renderer', 'name.html'));
+  nameWin.once('ready-to-show', () => bringToFront(nameWin));
   nameWin.on('closed', () => {
     nameWin = null;
   });
@@ -209,6 +230,7 @@ function openIntervalWindow() {
     width: 380,
     height: 250,
     title: 'Reminder interval',
+    show: false,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -222,6 +244,7 @@ function openIntervalWindow() {
   });
   intervalWin.setMenuBarVisibility(false);
   intervalWin.loadFile(path.join(__dirname, 'renderer', 'interval.html'));
+  intervalWin.once('ready-to-show', () => bringToFront(intervalWin));
   intervalWin.on('closed', () => {
     intervalWin = null;
   });
