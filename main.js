@@ -297,6 +297,8 @@ function createTray() {
 function rebuildTrayMenu() {
   const template = [
     { label: 'Drink now 💧', click: () => triggerReminder() },
+    { label: 'Set up (name + timing)…', click: () => openOnboardingWindow() },
+    { type: 'separator' },
     {
       label: userName ? `Set your name… (${userName})` : 'Set your name…',
       click: () => openNameWindow(),
