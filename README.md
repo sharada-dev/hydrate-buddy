@@ -11,7 +11,8 @@ drink water — then celebrates when you do and quietly walks off.
 - **She greets you by name** and lets you **pick your reminder interval** — a
   quick 2-step welcome sets both up the first time you open her.
 - The rest of the time she waits in your **system tray** — right-click it for
-  **Drink now**, **Set your name…**, **Reminder every X min**, **Pause**, or **Quit**.
+  **Drink now**, **Set up…**, **Set your name…**, **Reminder every X min**,
+  **Pause**, or **Quit**.
 
 Windows is fully supported (including launch-at-login). It also runs on macOS and
 Linux — only the one-command auto-start setup is Windows-only there (see below).
@@ -47,6 +48,12 @@ name, then how often she should nudge you:
 That's it — she then walks in and greets you **by name**. You can change either
 later, anytime, from her **tray icon** (right-click → *Set your name…* or
 *Reminder every X min*).
+
+> **Upgrading from an older version and don't see the welcome?** That's expected —
+> Windows keeps your settings between installs, so she remembers she already
+> greeted you and skips it. Just right-click her **tray icon → _Set up…_** to
+> reopen the welcome wizard anytime (or set your name and interval directly from
+> that same menu).
 
 ---
 
