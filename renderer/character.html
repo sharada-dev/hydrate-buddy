@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';" />
+    <title>Change character</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: #fdfdf7;
+        color: #1c1c1c;
+        padding: 18px 20px;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      h1 { font-size: 16px; margin-bottom: 2px; }
+      p.sub { font-size: 12px; color: #666; margin-bottom: 12px; }
+
+      .presets { display: flex; gap: 12px; }
+      .card {
+        flex: 1;
+        border: 2px solid #d8d8d8;
+        border-radius: 10px;
+        padding: 8px 6px 6px;
+        text-align: center;
+        cursor: pointer;
+        background: #fff;
+        position: relative;
+        transition: border-color 0.1s, box-shadow 0.1s;
+      }
+      .card:hover { border-color: #9bd3a6; }
+      .card.active { border-color: #37c24a; box-shadow: 0 0 0 3px rgba(55, 194, 74, 0.18); }
+      .card .thumb {
+        height: 130px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .card .thumb img { max-height: 130px; max-width: 100%; image-rendering: pixelated; }
+      .card .name { font-size: 12px; margin-top: 4px; font-weight: 600; }
+      .card .badge {
+        position: absolute; top: 6px; right: 8px;
+        color: #37c24a; font-weight: 800; font-size: 15px; display: none;
+      }
+      .card.active .badge { display: block; }
+
+      .divider {
+        display: flex; align-items: center; text-align: center;
+        color: #999; font-size: 11px; margin: 16px 0 10px; gap: 8px;
+      }
+      .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e2e2e2; }
+
+      .slots { display: flex; gap: 14px; }
+      .slot { flex: 1; text-align: center; }
+      .slot-title { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+      .preview {
+        height: 120px;
+        border: 2px solid #1c1c1c;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+        background-color: #fff;
+        background-image:
+          linear-gradient(45deg, #e6e6e6 25%, transparent 25%),
+          linear-gradient(-45deg, #e6e6e6 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #e6e6e6 75%),
+          linear-gradient(-45deg, transparent 75%, #e6e6e6 75%);
+        background-size: 16px 16px;
+        background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      }
+      .preview img { max-width: 100%; max-height: 100%; image-rendering: pixelated; }
+      .preview .ph { font-size: 12px; color: #999; }
+      button.pick { margin-top: 8px; }
+      p.tip { font-size: 11px; color: #888; margin-top: 12px; line-height: 1.5; }
+
+      .row { display: flex; gap: 10px; margin-top: 14px; justify-content: space-between; }
+      button.nav {
+        font-size: 13px; font-weight: 600; padding: 8px 14px;
+        border: 2px solid #1c1c1c; border-radius: 6px; cursor: pointer; background: #fff;
+      }
+      button.nav:hover { background: #eee; }
+      .primary { background: #37c24a; color: #fff; border-color: #37c24a; }
+      .primary:hover { background: #2fae41; }
+      .primary:disabled { background: #b9e6c1; border-color: #b9e6c1; color: #f4f4f4; cursor: default; }
+      p.status { font-size: 12px; color: #37c24a; margin-top: 9px; min-height: 16px; text-align: center; }
+      p.status.busy { color: #666; }
+    </style>
+  </head>
+  <body>
+    <h1>Choose a character 🎨</h1>
+    <p class="sub">Tap one to use it right away.</p>
+
+    <div class="presets" id="presets"></div>
+
+    <div class="divider">or bring your own</div>
+
+    <div class="slots">
+      <div class="slot">
+        <div class="slot-title">Standing pose</div>
+        <div class="preview" id="preview-idle"><span class="ph">no image</span></div>
+        <button class="pick nav" data-slot="idle">Choose image…</button>
+      </div>
+      <div class="slot">
+        <div class="slot-title">Drinking pose</div>
+        <div class="preview" id="preview-drinking"><span class="ph">no image</span></div>
+        <button class="pick nav" data-slot="drinking">Choose image…</button>
+      </div>
+    </div>
+    <p class="tip">
+      💡 Works best on a <b>plain, solid-colour background</b>. Prompts are in the
+      repo's <i>"Make your own character"</i> guide.
+    </p>
+
+    <div class="row">
+      <button id="apply" class="nav primary" disabled>Use these images</button>
+      <button id="close" class="nav">Close</button>
+    </div>
+    <p id="status" class="status"></p>
+
+    <script src="character.js"></script>
+  </body>
+</html>

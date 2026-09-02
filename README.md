@@ -57,6 +57,21 @@ later, anytime, from her **tray icon** (right-click → *Set your name…* or
 
 ---
 
+## 🧑‍🤝‍🧑 Choose your character
+
+Right-click the tray icon → **Change character…** and tap a card to switch
+instantly — or bring your own two poses (the app cuts out the background for you):
+
+<p align="center">
+  <img src="assets/idle.png" height="230" alt="Business woman" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/characters/man/idle.png" height="230" alt="Business man" />
+</p>
+
+<p align="center"><i>Business woman &nbsp;•&nbsp; Business man — and more can be added anytime.</i></p>
+
+---
+
 ## 🧑‍💻 Run from source (developers / customising)
 
 ### 1. Install Node.js (one time)
@@ -143,19 +158,22 @@ is stored only in your own machine's app-data folder — never in this repo.
 **Character size / position** — tweak `#pet` (size) and the window size
 constants in `main.js`.
 
-**Use your own character** — drop two images into `assets/raw/` named
-`idle.png` (standing) and `drinking.png` (drinking pose), then run:
+**Pick a character** — right-click the tray icon → **Change character…** to open
+the gallery, then tap **Business woman** or **Business man** to switch instantly.
+Saved per-user.
 
-```bash
-npm run prepare-assets
-```
-
-This removes the flat background behind your art and writes the transparent
-sprites the app uses (`assets/idle.png`, `assets/drinking.png`, `assets/tray.png`).
-Works best when the source art is on a **plain, solid-colour background**.
+**Bring your own** — in that same window you can instead pick two still images (a
+**standing** pose and a **drinking** pose); the app **cuts out the background for
+you** and swaps her in. No code needed.
 
 > 💡 No art skills? The [**Make your own character** guide](docs/make-your-own-character.md)
-> has copy-paste AI prompts for generating two matching poses.
+> has copy-paste AI prompts for generating two matching poses. Works best on a
+> **plain, solid-colour background**.
+
+*Adding a bundled preset (for everyone)?* Drop `idle.png` + `drinking.png` into
+`assets/characters/<name>/raw/`, run `npm run prepare-assets` to cut them out, and
+add the character to the `PRESETS` list in `main.js`. (The default pair lives in
+`assets/raw/` → `npm run prepare-assets` regenerates it and `assets/tray.png`.)
 
 ---
 

@@ -45,7 +45,9 @@
       "renderer/**/*",
       "assets/idle.png",
       "assets/drinking.png",
-      "assets/tray.png"
+      "assets/tray.png",
+      "assets/characters/**/*",
+      "!assets/characters/**/raw/**"
     ],
     "win": {
       "target": [

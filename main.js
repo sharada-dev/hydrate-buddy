@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, powerMonitor } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, powerMonitor, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -19,6 +19,7 @@ let win = null;
 let nameWin = null;
 let intervalWin = null;
 let onboardWin = null;
+let characterWin = null;
 let tray = null;
 let ticker = null;
 let nextReminderAt = 0; // epoch ms of the next due reminder
@@ -283,6 +284,91 @@ function openOnboardingWindow() {
   });
 }
 
+// ---- Custom character (user's own sprites, stored in the user-data folder) --
+function customSpriteFile(which) {
+  return path.join(app.getPath('userData'), 'custom-' + which + '.png'); // idle | drinking
+}
+function fileToDataUrl(file) {
+  try {
+    const ext = path.extname(file).toLowerCase().replace('.', '');
+    const mime = ext === 'jpg' ? 'jpeg' : ext || 'png';
+    return 'data:image/' + mime + ';base64,' + fs.readFileSync(file).toString('base64');
+  } catch (e) {
+    return null;
+  }
+}
+function dataUrlToBuffer(dataUrl) {
+  const m = /^data:image\/[\w+.-]+;base64,(.+)$/.exec(dataUrl || '');
+  return m ? Buffer.from(m[1], 'base64') : null;
+}
+function hasCustomCharacter() {
+  return fs.existsSync(customSpriteFile('idle')) && fs.existsSync(customSpriteFile('drinking'));
+}
+function notifySpritesChanged() {
+  if (win && win.webContents && !win.webContents.isDestroyed()) {
+    win.webContents.send('sprites:changed');
+  }
+}
+
+// Bundled preset characters (each is a pair of transparent sprites).
+const PRESETS = [
+  {
+    key: 'woman',
+    label: 'Business woman',
+    idle: path.join(__dirname, 'assets', 'idle.png'),
+    drinking: path.join(__dirname, 'assets', 'drinking.png'),
+  },
+  {
+    key: 'man',
+    label: 'Business man',
+    idle: path.join(__dirname, 'assets', 'characters', 'man', 'idle.png'),
+    drinking: path.join(__dirname, 'assets', 'characters', 'man', 'drinking.png'),
+  },
+];
+function activeCharacterKey() {
+  return loadConfig().character || 'woman';
+}
+function spritesForActive() {
+  const key = activeCharacterKey();
+  if (key === 'custom' && hasCustomCharacter()) {
+    return {
+      idle: fileToDataUrl(customSpriteFile('idle')),
+      drinking: fileToDataUrl(customSpriteFile('drinking')),
+    };
+  }
+  const preset = PRESETS.find((p) => p.key === key) || PRESETS[0];
+  return { idle: fileToDataUrl(preset.idle), drinking: fileToDataUrl(preset.drinking) };
+}
+
+function openCharacterWindow() {
+  if (characterWin) {
+    bringToFront(characterWin);
+    return;
+  }
+  characterWin = new BrowserWindow({
+    width: 470,
+    height: 640,
+    title: 'Change character',
+    show: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    skipTaskbar: false,
+    alwaysOnTop: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  characterWin.setMenuBarVisibility(false);
+  characterWin.loadFile(path.join(__dirname, 'renderer', 'character.html'));
+  characterWin.once('ready-to-show', () => bringToFront(characterWin));
+  characterWin.on('closed', () => {
+    characterWin = null;
+  });
+}
+
 function createTray() {
   const iconPath = path.join(__dirname, 'assets', 'tray.png');
   let icon = nativeImage.createFromPath(iconPath);
@@ -321,6 +407,7 @@ function rebuildTrayMenu() {
         },
       ],
     },
+    { label: 'Change character…', click: () => openCharacterWindow() },
     {
       label: 'Pause reminders',
       type: 'checkbox',
@@ -400,6 +487,66 @@ ipcMain.on('interval:close', () => {
 });
 ipcMain.on('onboarding:close', () => {
   if (onboardWin) onboardWin.close();
+});
+
+// ---- Custom character IPC ------------------------------------------------
+ipcMain.handle('dialog:pickImage', async () => {
+  const res = await dialog.showOpenDialog(characterWin || undefined, {
+    title: 'Choose a character image',
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'] }],
+  });
+  if (res.canceled || !res.filePaths[0]) return null;
+  return fileToDataUrl(res.filePaths[0]);
+});
+ipcMain.handle('character:save', (_e, idleDataUrl, drinkingDataUrl) => {
+  const idleBuf = dataUrlToBuffer(idleDataUrl);
+  const drinkBuf = dataUrlToBuffer(drinkingDataUrl);
+  if (!idleBuf || !drinkBuf) return false;
+  try {
+    fs.writeFileSync(customSpriteFile('idle'), idleBuf);
+    fs.writeFileSync(customSpriteFile('drinking'), drinkBuf);
+    const cfg = loadConfig();
+    cfg.character = 'custom';
+    saveConfig(cfg);
+    notifySpritesChanged();
+    return true;
+  } catch (e) {
+    console.error('Failed to save custom character:', e);
+    return false;
+  }
+});
+ipcMain.handle('character:reset', () => {
+  try {
+    for (const which of ['idle', 'drinking']) {
+      const f = customSpriteFile(which);
+      if (fs.existsSync(f)) fs.unlinkSync(f);
+    }
+  } catch (e) {
+    /* ignore */
+  }
+  const cfg = loadConfig();
+  cfg.character = 'woman';
+  saveConfig(cfg);
+  notifySpritesChanged();
+  return true;
+});
+ipcMain.handle('character:select', (_e, key) => {
+  const cfg = loadConfig();
+  cfg.character = key;
+  saveConfig(cfg);
+  notifySpritesChanged();
+  return true;
+});
+ipcMain.handle('presets:get', () => ({
+  active: activeCharacterKey(),
+  hasCustom: hasCustomCharacter(),
+  presets: PRESETS.map((p) => ({ key: p.key, label: p.label, thumb: fileToDataUrl(p.idle) })),
+}));
+ipcMain.handle('character:hasCustom', () => hasCustomCharacter());
+ipcMain.handle('sprites:get', () => spritesForActive());
+ipcMain.on('character:close', () => {
+  if (characterWin) characterWin.close();
 });
 // --------------------------------------------------------------------------
 

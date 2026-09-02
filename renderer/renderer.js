@@ -166,3 +166,21 @@ snoozeBtn.addEventListener('click', onSnooze);
 
 // Triggered by the main process every 45 min (and once shortly after launch).
 window.hydrate.onShow((payload) => runReminder(payload && payload.name));
+
+// Use the user's own character if they've set one, else the bundled default.
+async function loadSprites() {
+  try {
+    const s = await window.hydrate.getSprites();
+    if (s && s.idle && s.drinking) {
+      spriteIdle.src = s.idle;
+      spriteDrinking.src = s.drinking;
+      return;
+    }
+  } catch (e) {
+    /* fall back to defaults */
+  }
+  spriteIdle.src = '../assets/idle.png';
+  spriteDrinking.src = '../assets/drinking.png';
+}
+loadSprites();
+if (window.hydrate.onSpritesChanged) window.hydrate.onSpritesChanged(loadSprites);

@@ -17,4 +17,14 @@ contextBridge.exposeInMainWorld('hydrate', {
   closeIntervalWindow: () => ipcRenderer.send('interval:close'),
   // first-run onboarding wizard
   closeOnboarding: () => ipcRenderer.send('onboarding:close'),
+  // character gallery + custom import (the "Change character…" window)
+  getPresets: () => ipcRenderer.invoke('presets:get'),
+  selectCharacter: (key) => ipcRenderer.invoke('character:select', key),
+  pickImage: () => ipcRenderer.invoke('dialog:pickImage'),
+  saveCharacter: (idle, drinking) => ipcRenderer.invoke('character:save', idle, drinking),
+  resetCharacter: () => ipcRenderer.invoke('character:reset'),
+  hasCustomCharacter: () => ipcRenderer.invoke('character:hasCustom'),
+  getSprites: () => ipcRenderer.invoke('sprites:get'),
+  onSpritesChanged: (cb) => ipcRenderer.on('sprites:changed', () => cb()),
+  closeCharacterWindow: () => ipcRenderer.send('character:close'),
 });

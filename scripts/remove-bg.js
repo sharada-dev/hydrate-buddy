@@ -98,10 +98,10 @@ function removeBackground(image, tolerance) {
   return image;
 }
 
-async function processPose(name) {
-  const src = path.join(RAW_DIR, `${name}.png`);
-  const out = path.join(OUT_DIR, `${name}.png`);
-  console.log(`  - ${name}.png ...`);
+async function processPose(srcDir, outDir, name) {
+  const src = path.join(srcDir, `${name}.png`);
+  const out = path.join(outDir, `${name}.png`);
+  console.log(`  - ${path.relative(path.join(__dirname, '..'), out)} ...`);
   const image = await Jimp.read(src);
   removeBackground(image, TOLERANCE);
   try {
@@ -140,9 +140,23 @@ async function makeTrayIcon(idleImage) {
     console.error('Missing assets/raw/idle.png — nothing to process.');
     process.exit(1);
   }
-  console.log('Preparing transparent sprites:');
-  const idle = await processPose('idle');
-  await processPose('drinking');
+  console.log('Preparing transparent sprites (default character):');
+  const idle = await processPose(RAW_DIR, OUT_DIR, 'idle');
+  await processPose(RAW_DIR, OUT_DIR, 'drinking');
   await makeTrayIcon(idle);
-  console.log('Done. Sprites written to assets/.');
+
+  // Also process any bundled preset characters:
+  //   assets/characters/<key>/raw/{idle,drinking}.png -> assets/characters/<key>/{idle,drinking}.png
+  const charsDir = path.join(__dirname, '..', 'assets', 'characters');
+  if (fs.existsSync(charsDir)) {
+    for (const key of fs.readdirSync(charsDir)) {
+      const cRaw = path.join(charsDir, key, 'raw');
+      if (fs.existsSync(path.join(cRaw, 'idle.png')) && fs.existsSync(path.join(cRaw, 'drinking.png'))) {
+        console.log(`Preparing preset character "${key}":`);
+        await processPose(cRaw, path.join(charsDir, key), 'idle');
+        await processPose(cRaw, path.join(charsDir, key), 'drinking');
+      }
+    }
+  }
+  console.log('Done.');
 })();
