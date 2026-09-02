@@ -37,17 +37,17 @@ On macOS/Linux, use the "Run from source" steps below.
 
 ## 👋 First launch
 
-The first time you open her, a quick **2-step welcome** gets you set up — your
-name, then how often she should nudge you:
+The first time you open her, a quick **3-step welcome** gets you set up — your
+name, how often she should nudge you, and which **character** reminds you:
 
 <p align="center">
   <img src="docs/onboarding-1.png" width="49%" alt="Step 1 — What should she call you?" />
   <img src="docs/onboarding-2.png" width="49%" alt="Step 2 — How often should she nudge you?" />
 </p>
 
-That's it — she then walks in and greets you **by name**. You can change either
-later, anytime, from her **tray icon** (right-click → *Set your name…* or
-*Reminder every X min*).
+That's it — she then walks in and greets you **by name**. You can change any of it
+later, anytime, from her **tray icon** (right-click → *Set up…*, *Set your name…*,
+*Reminder every X min*, or *Change character…*).
 
 > **Upgrading from an older version and don't see the welcome?** That's expected —
 > Windows keeps your settings between installs, so she remembers she already

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self'; style-src 'self' 'unsafe-inline';" />
+          content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';" />
     <title>Welcome to Hydrate Buddy</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -42,19 +42,34 @@
       .field { display: flex; align-items: center; gap: 10px; }
       .field input { width: 90px; }
       .field span { font-size: 13px; color: #333; }
+
+      .cards { display: flex; gap: 12px; margin: 4px 0 6px; }
+      .card {
+        flex: 1;
+        border: 2px solid #d8d8d8;
+        border-radius: 10px;
+        padding: 8px 6px 6px;
+        text-align: center;
+        cursor: pointer;
+        background: #fff;
+        position: relative;
+      }
+      .card:hover { border-color: #9bd3a6; }
+      .card.active { border-color: #37c24a; box-shadow: 0 0 0 3px rgba(55, 194, 74, 0.18); }
+      .card .thumb { height: 150px; display: flex; align-items: flex-end; justify-content: center; }
+      .card .thumb img { max-height: 150px; max-width: 100%; image-rendering: pixelated; }
+      .card .name { font-size: 12px; margin-top: 4px; font-weight: 600; }
+      .card .badge { position: absolute; top: 6px; right: 8px; color: #37c24a; font-weight: 800; font-size: 15px; display: none; }
+      .card.active .badge { display: block; }
+
       .row { display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; }
       button.nav {
-        font-size: 13px;
-        font-weight: 600;
-        padding: 9px 16px;
-        border: 2px solid #1c1c1c;
-        border-radius: 6px;
-        cursor: pointer;
+        font-size: 13px; font-weight: 600; padding: 9px 16px;
+        border: 2px solid #1c1c1c; border-radius: 6px; cursor: pointer; background: #fff;
       }
-      .primary { background: #37c24a; color: #fff; }
+      button.nav:hover { background: #eee; }
+      .primary { background: #37c24a; color: #fff; border-color: #37c24a; }
       .primary:hover { background: #2fae41; }
-      .ghost { background: #fff; }
-      .ghost:hover { background: #eee; }
       .hidden { display: none !important; }
       p.hint { font-size: 11px; color: #888; margin-top: 12px; }
     </style>
@@ -62,19 +77,19 @@
   <body>
     <!-- Step 1: name -->
     <div id="step1">
-      <div class="steps">STEP 1 OF 2</div>
+      <div class="steps">STEP 1 OF 3</div>
       <h1>What should she call you?</h1>
       <p class="sub">She'll use your name in her reminders.</p>
       <input id="name" type="text" maxlength="24" placeholder="e.g. Alex" autocomplete="off" />
       <div class="row">
-        <button id="next" class="nav primary">Next →</button>
+        <button id="to2" class="nav primary">Next →</button>
       </div>
       <p class="hint">Leave it blank to keep her reminders generic.</p>
     </div>
 
     <!-- Step 2: interval -->
     <div id="step2" class="hidden">
-      <div class="steps">STEP 2 OF 2</div>
+      <div class="steps">STEP 2 OF 3</div>
       <h1>How often should she nudge you?</h1>
       <p class="sub">Pick a reminder interval — tap a preset or type your own.</p>
       <div class="chips" id="chips">
@@ -89,10 +104,21 @@
         <span>minutes</span>
       </div>
       <div class="row">
-        <button id="back" class="nav ghost">← Back</button>
-        <button id="done" class="nav primary">Done</button>
+        <button id="b2to1" class="nav">← Back</button>
+        <button id="to3" class="nav primary">Next →</button>
       </div>
-      <p class="hint">You can change both anytime from her tray icon.</p>
+    </div>
+
+    <!-- Step 3: character -->
+    <div id="step3" class="hidden">
+      <div class="steps">STEP 3 OF 3</div>
+      <h1>Who should remind you?</h1>
+      <p class="sub">Tap a character (you can change or import your own later).</p>
+      <div class="cards" id="charCards"></div>
+      <div class="row">
+        <button id="b3to2" class="nav">← Back</button>
+        <button id="finish" class="nav primary">Done</button>
+      </div>
     </div>
 
     <script src="onboarding.js"></script>

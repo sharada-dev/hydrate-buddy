@@ -259,8 +259,8 @@ function openOnboardingWindow() {
     return;
   }
   onboardWin = new BrowserWindow({
-    width: 400,
-    height: 340,
+    width: 430,
+    height: 450,
     title: 'Welcome to Hydrate Buddy',
     show: false,
     resizable: false,
@@ -383,7 +383,7 @@ function createTray() {
 function rebuildTrayMenu() {
   const template = [
     { label: 'Drink now 💧', click: () => triggerReminder() },
-    { label: 'Set up (name + timing)…', click: () => openOnboardingWindow() },
+    { label: 'Set up…', click: () => openOnboardingWindow() },
     { type: 'separator' },
     {
       label: userName ? `Set your name… (${userName})` : 'Set your name…',
